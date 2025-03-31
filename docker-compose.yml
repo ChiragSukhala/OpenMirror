@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: openmirror-nginx
+    volumes:
+      - ./data:/var/www/html:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./logs:/var/log/nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - crons
+    restart: unless-stopped
+
+  crons:
+    image: debian:latest
+    container_name: openmirror-crons
+    volumes:
+      - ./data:/var/www/html
+      - ./scripts:/scripts
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apt update && apt install -y rsync
+        echo "*/30 * * * * rsync -avz --delete rsync://mirror.example.com/repo /var/www/html" > /etc/crontabs/root
+        crond -f -d 8
+    restart: unless-stopped
+
+  goaccess:
+    image: debian:latest
+    container_name: openmirror-goaccess
+    volumes:
+      - ./logs:/var/log/nginx:ro
+      - ./reports:/reports
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apt update && apt install -y goaccess
+        echo "*/30 * * * * goaccess /var/log/nginx/access.log --log-format=COMBINED --output=/reports/index.html" > /etc/crontabs/root
+        crond -f -d 8
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
