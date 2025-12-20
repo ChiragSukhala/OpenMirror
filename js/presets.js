@@ -39,7 +39,7 @@ const PRESETS = [
         id: 'ctan',
         name: 'CTAN',
         description: 'The Comprehensive TeX Archive Network (CTAN) Mirror',
-        upstream: 'rsync://rsync.dante.de/ctan',
+        upstream: 'rsync://rsync.dante.de/CTAN',
         defaultPath: 'ctan',
         helpUrl: 'https://ctan.org/mirrors',
         excludes: []
